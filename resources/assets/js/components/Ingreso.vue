@@ -138,7 +138,7 @@
                                     <label>Articulo <span style="color:red;" v-show="idarticulo==0">(*Seleccione)</span></label>
                                     <div class="form-inline">
                                         <input type="text" class="form-control" v-model="codigo" @keyup.enter="buscarArticulo()" placeholder="Ingrese el articulo">
-                                        <button class="btn btn-primary">...</button>
+                                        <button @click="abrirModal()" class="btn btn-primary">...</button>
                                         <input type="text" readonly class="form-control" v-model="articulo">
                                     </div>
                                 </div> 
@@ -233,7 +233,56 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <!-- Modal en blanco -->
+                        <div class="form-group row">
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <select class="form-control col-md-3" v-model="criterioA">
+                                        <option value="nombre">Nombre</option>
+                                        <option value="descripcion">Descripción</option>
+                                        <option value="codigo">Codigo</option>
+                                    </select>
+                                    <input type="text" v-model="buscarA" @keyup.enter="listarArticulos(buscarA,criterioA)" class="form-control" placeholder="Texto a buscar">
+                                    <button type="submit" @click="listarArticulos(buscarA,criterioA)" class="btn btn-primary"><i class="fa fa-search"></i> Buscar</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Opciones</th>
+                                        <th>codigo</th>
+                                        <th>Nombre</th>
+                                        <th>Categoria</th>
+                                        <th>Precio Venta</th>
+                                        <th>Stock</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="articulo in arrayArticulo" :key="articulo.id">
+                                        <td>
+                                            <button type="button" @click="agregarDetalleModal(articulo)" class="btn btn-success btn-sm">
+                                                <i class="icon-check"></i>
+                                            </button> &nbsp;
+                                        </td>
+                                        <td v-text="articulo.codigo"></td>
+                                        <td v-text="articulo.nombre"></td>
+                                        <td v-text="articulo.nombre_categoria"></td>
+                                        <td v-text="articulo.precio_venta"></td>
+                                        <td v-text="articulo.stock"></td>
+                                        <td>
+                                            <div v-if="articulo.condicion">
+                                                <span class="badge badge-success">Activo</span>
+                                            </div>
+                                            <div v-else>
+                                                <span class="badge badge-danger">Desactivado</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" @click="cerrarModal()">Cerrar</button>
@@ -287,6 +336,8 @@ import vSelect from 'vue-select';
                 offset: 3,
                 criterio: 'num_comprobante',
                 buscar: '',
+                criterioA: 'nombre',
+                buscarA: '',
                 arrayArticulo: [],
                 idarticulo: 0,
                 codigo: '',
@@ -453,6 +504,51 @@ import vSelect from 'vue-select';
                 me.cantidad = 0;
                 me.precio = 0;
             },
+            agregarDetalleModal(data = []){
+                var me = this;
+                if (me.encuentra(data['id'])) {
+                    ////////////////////Sweet Alert instanciar sal////////////////////////////
+                    const swalWithBootstrapButtons = Swal.mixin({
+                        customClass: {
+                            confirmButton: 'btn btn-success',
+                            cancelButton: 'btn btn-danger'
+                        },
+                        buttonsStyling: false
+                    })
+
+                    swalWithBootstrapButtons.fire(
+                        'Error!',
+                        'El articulo ya se encuentra agregado!',
+                        'error'
+                    )
+                    ////////////////////////////////////////////////////////////////////////
+                } else {
+                    me.arrayDetalle.push({
+                        idarticulo: data['id'],
+                        articulo: data['nombre'],
+                        cantidad: 1,
+                        precio: 1
+                    });
+                } 
+            },
+            listarArticulos(buscar, criterio){
+                //No entiendo porque necesariamente debo declarar let me, se podria usar defrente this.
+                let me = this;
+                var url = '/articulo/listarArticulo?buscar=' + buscar + '&criterio=' + criterio;
+                axios.get(url)
+                .then(function (response) {
+                    // handle success
+                    var respuesta = response.data;
+                    me.arrayArticulo = respuesta.articulos.data;
+                })
+                .catch(function (error) {
+                    // handle error
+                    console.log(error);
+                })
+                .then(function () {
+                    // always executed
+                });
+            },
             registrarPersona(){
                 const swalWithBootstrapButtons = Swal.mixin({
                 customClass: {
@@ -486,37 +582,6 @@ import vSelect from 'vue-select';
                         'El usuaeio ha sido registrado con exito.',
                         'success'
                     )
-                    me.listarPersonas(1, '', 'nombre');
-                })
-                .catch(function (error) {
-                    // handle error
-                    console.log(error);
-                })
-                .then(function () {
-                    // always executed
-                });
-            },
-            actualizarPersona(){
-                if(this.validarPersona() == 1){
-                    return;
-                }
-
-                let me = this;
-                axios.put('/user/actualizar', 
-                {
-                    'nombre': me.nombre,
-                    'tipo_documento': me.tipo_documento,
-                    'num_documento': me.num_documento,
-                    'direccion': me.direccion,
-                    'telefono': me.telefono,
-                    'email': me.email,
-                    'usuario': me.usuario,
-                    'password': me.password,
-                    'idrol': me.idrol,
-                    'id' : me.persona_id
-                }).then(function (response) {
-                    // handle success
-                    me.cerrarModal();
                     me.listarPersonas(1, '', 'nombre');
                 })
                 .catch(function (error) {
@@ -646,68 +711,20 @@ import vSelect from 'vue-select';
                 }
                 })
             },
-            abrirModal(modelo, accion, data = []){ 
-                this.selectRol();
-                switch (modelo) {
-                    case "persona":
-                    {
-                        switch (accion) {
-                            case 'registrar':
-                            {
-                                this.tituloModal = 'Registrar Usuario';
-                                this.accion = 1;
-                                this.modal = 1;
-                                this.nombre = '';
-                                this.tipo_documento = 'DNI';
-                                this.num_documento = '';
-                                this.direccion = '';
-                                this.telefono = '';
-                                this.email = '';
-                                this.usuario = '';
-                                this.password = '';
-                                this.idrol = 0;
-                                break;
-                            }
-                            case 'actualizar':
-                            {    
-                                 this.modal = 1;
-                                 this.tituloModal = "Actualizar Cliente";
-                                 this.accion = 2;
-                                 this.persona_id = data['id'];
-                                 this.nombre = data['nombre'];
-                                 this.tipo_documento = data['tipo_documento'];
-                                 this.num_documento = data['num_documento'];
-                                 this.direccion = data['direccion'];
-                                 this.telefono = data['telefono'];
-                                 this.email = data['email'];
-                                 this.usuario = data['usuario'];
-                                 this.password = data['password'];
-                                 this.idrol = data['idrol'];
-                                 break;
-                            }
-                        }
-                    }
-                }
+            cerrarModal(){
+                this.modal = 0;
+                this.tituloModal = '';
+            },
+            abrirModal(){ 
+                this.arrayArticulo = [];
+                this.tituloModal = 'Seleccione 1 o varios articulos';
+                this.modal = 1;
             },
             mostrarDetalle(){
                 this.listado = 0;
             },
             cerrarDetalle(){
                 this.listado = 1;
-            },
-            cerrarModal(){
-                this.modal =0;
-                this.tituloModal = '';
-                this.nombre = '';
-                this.tipo_documento = 'DNI';
-                this.num_documento = '';
-                this.direccion = '';
-                this.telefono = '';
-                this.email = '';
-                this.usuario = '';
-                this.password = '';
-                this.idrol = 0;
-                this.errorPersona = '';
             }
         },
         mounted() {
