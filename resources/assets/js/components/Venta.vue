@@ -8,12 +8,12 @@
             <!-- Ejemplo de tabla Listado -->
             <div class="card">
                 <div class="card-header">
-                    <i class="fa fa-align-justify"></i> Ingresos
+                    <i class="fa fa-align-justify"></i> Ventas
                     <button type="button" @click="mostrarDetalle()" class="btn btn-secondary">
                         <i class="icon-plus"></i>&nbsp;Nuevo
                     </button>
                 </div>
-                <!-- CARD BODY LISTADO INGRESOS (LISTA DE INGRESOS)-->
+                <!-- CARD BODY LISTADO VENTAS (LISTA DE VENTAS)-->
                 <template v-if="listado==1">
                     <div class="card-body">
                         <div class="form-group row">
@@ -24,8 +24,8 @@
                                         <option value="num_comprobante">Numero Comprobante</option>
                                         <option value="fecha_hora">Fecha-Hora</option>
                                     </select>
-                                    <input type="text" v-model="buscar" @keyup.enter="listarIngreso(1,buscar,criterio)" class="form-control" placeholder="Texto a buscar">
-                                    <button type="submit" @click="listarIngreso(1,buscar,criterio)" class="btn btn-primary"><i class="fa fa-search"></i> Buscar</button>
+                                    <input type="text" v-model="buscar" @keyup.enter="listarVenta(1,buscar,criterio)" class="form-control" placeholder="Texto a buscar">
+                                    <button type="submit" @click="listarVenta(1,buscar,criterio)" class="btn btn-primary"><i class="fa fa-search"></i> Buscar</button>
                                 </div>
                             </div>
                         </div>
@@ -46,26 +46,26 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr v-for="ingreso in arrayIngreso" :key="ingreso.id">
+                                    <tr v-for="venta in arrayVenta" :key="venta.id">
                                         <td>
                                             <button type="button" @click="verIngreso(ingreso.id)" class="btn btn-success btn-sm">
                                                 <i class="icon-eye"></i>
                                             </button>
-                                            <template v-if="ingreso.estado == 'Registrado'">
-                                                <button type="button" class="btn btn-danger btn-sm" @click="desactivarIngreso(ingreso.id)">
+                                            <template v-if="venta.estado == 'Registrado'">
+                                                <button type="button" class="btn btn-danger btn-sm" @click="desactivarIngreso(venta.id)">
                                                     <i class="icon-trash"></i>
                                                 </button>
                                             </template>
                                         </td>
-                                        <td v-text="ingreso.usuario"></td>
-                                        <td v-text="ingreso.nombre"></td>
-                                        <td v-text="ingreso.tipo_comprobante"></td>
-                                        <td v-text="ingreso.serie_comprobante"></td>
-                                        <td v-text="ingreso.num_comprobante"></td>
-                                        <td v-text="ingreso.fecha_hora"></td>
-                                        <td v-text="ingreso.total"></td>
-                                        <td v-text="ingreso.impuesto"></td>
-                                        <td v-text="ingreso.estado"></td>
+                                        <td v-text="venta.usuario"></td>
+                                        <td v-text="venta.nombre"></td>
+                                        <td v-text="venta.tipo_comprobante"></td>
+                                        <td v-text="venta.serie_comprobante"></td>
+                                        <td v-text="venta.num_comprobante"></td>
+                                        <td v-text="venta.fecha_hora"></td>
+                                        <td v-text="venta.total"></td>
+                                        <td v-text="venta.impuesto"></td>
+                                        <td v-text="venta.estado"></td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -85,20 +85,20 @@
                         </nav>
                     </div>
                 </template>
-                <!-- FIN LISTADO INGRESOS (REGISTRO DE INGRESOS)-->
+                <!-- FIN LISTADO VENTAS (REGISTRO DE VENTAS)-->
                 <!-- CARD BODY DETALLE -->
                 <template v-else-if="listado==0">
                     <div class="card-body">
                         <div class="form-group row border">
                             <div class="col-md-9">
                                 <div class="form-group">
-                                    <label>Proveedor(*)</label>
+                                    <label>Clientes(*)</label>
                                     <v-select
-                                        :on-search="selectProveedor"
+                                        :on-search="selectCliente"
                                         label="nombre"
-                                        :options="arrayProveedor"
-                                        placeholder="Buscar Proveedores..."
-                                        :onChange="getDatosProveedor"                                        
+                                        :options="arrayCliente"
+                                        placeholder="Buscar Clientes..."
+                                        :onChange="getDatosCliente"                                        
                                     >
 
                                     </v-select>
@@ -133,9 +133,9 @@
                             </div>
                         </div>
                         <div class="col-md-12">
-                            <div v-show="errorIngreso" class="form-group row div-error">
+                            <div v-show="errorVenta" class="form-group row div-error">
                                 <div class="text-center text-error">
-                                    <div v-for="error in errorMostrarMsjIngreso" :key="error" v-text="error">
+                                    <div v-for="error in errorMostrarMsjVenta" :key="error" v-text="error">
 
                                     </div>
                                 </div>
@@ -222,14 +222,14 @@
                         <div class="form-group">
                             <div class="col-md-12">
                                 <button type="button" class="btn btn-secondary" @click="cerrarDetalle()">Cerrar</button>
-                                <button type="button" class="btn btn-primary" @click="registrarIngreso()">Registrar Compra</button>
+                                <button type="button" class="btn btn-primary" @click="registrarVenta()">Registrar Compra</button>
                             </div>
                         </div>
                     </div>
                 </template>
                 <!-- FIN DETALLE -->
 
-                <!-- NUEVO TEMPLATE (TERCER) [VER INGRESO CON SU DETALLE]--->
+                <!-- NUEVO TEMPLATE (TERCER) [VER VENTA CON SU DETALLE]--->
                 <template v-else-if="listado==2">
                     <div class="card-body">
                         <div class="form-group row border">
@@ -399,9 +399,9 @@ import vSelect from 'vue-select';
     export default {
         data() {
             return {
-                ingreso_id: 0,
-                idproveedor: '',
-                proveedor: '',
+                venta_id: 0,
+                idcliente: '',
+                cliente: '',
                 tipo_comprobante: 'BOLETA',
                 serie_comprobante: '',
                 num_comprobante: '',
@@ -409,15 +409,15 @@ import vSelect from 'vue-select';
                 total: 0.0,
                 totalImpuesto: 0.0,
                 totalParcial: 0.0,
-                arrayIngreso: [],
-                arrayProveedor: [],
+                arrayVenta: [],
+                arrayCliente: [],
                 arrayDetalle: [],
                 listado: 1,
                 modal: 0,
                 tituloModal: '',
                 accion: 0,
-                errorIngreso: 0,
-                errorMostrarMsjIngreso: [],
+                errorVenta: 0,
+                errorMostrarMsjVenta: [],
                 pagination: {
                     'total'         : 0,
                     'current_page'  : 0,
@@ -478,15 +478,16 @@ import vSelect from 'vue-select';
             }
         },
         methods: {
-            listarIngreso(page, buscar, criterio){
+            listarVenta(page, buscar, criterio){
                 //No entiendo porque necesariamente debo declarar let me, se podria usar defrente this.
                 let me = this;
-                var url = '/ingreso?page=' + page +'&buscar=' + buscar + '&criterio=' + criterio;
+                var url = '/venta?page=' + page +'&buscar=' + buscar + '&criterio=' + criterio;
                 axios.get(url)
                 .then(function (response) {
+                    console.log(response);
                     // handle success
                     var respuesta = response.data;
-                    me.arrayIngreso = respuesta.ingresos.data;
+                    me.arrayVenta = respuesta.ventas.data;
                     me.pagination = respuesta.pagination;
 
                     //Comprobar .data (ingresar a data)
@@ -495,21 +496,18 @@ import vSelect from 'vue-select';
                 .catch(function (error) {
                     // handle error
                     console.log(error);
-                })
-                .then(function () {
-                    // always executed
                 });
             },
-            selectProveedor(search,loading){
+            selectCliente(search,loading){
                 let me = this;
                 loading(true); //Sin declarar asigno true a loading
                 
-                var url = '/proveedor/selectProveedor?filtro='+search;
+                var url = '/cliente/selectCliente?filtro='+search;
                 axios.get(url).then(function (response) {
                     let respuesta = response.data;
                     //No se que hace q:search
                     q: search
-                    me.arrayProveedor = respuesta.proveedores;
+                    me.arrayCliente = respuesta.clientes;
                     loading(false);
                 })
                 .catch(function (error) {
@@ -517,10 +515,10 @@ import vSelect from 'vue-select';
                 });
 
             },
-            getDatosProveedor(val1){
+            getDatosCliente(val1){
                 let me = this;
                 me.loading = true;
-                me.idproveedor = val1.id;
+                me.idcliente = val1.id;
             },
             buscarArticulo(){
                 let me = this;
@@ -809,7 +807,7 @@ import vSelect from 'vue-select';
             }
         },
         mounted() {
-            this.listarIngreso(1, this.buscar, this.criterio );
+            this.listarVenta(1, this.buscar, this.criterio );
         }      
     }
 </script>
