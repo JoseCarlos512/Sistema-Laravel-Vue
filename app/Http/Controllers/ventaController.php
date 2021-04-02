@@ -11,7 +11,7 @@ use App\DetalleVenta;
 class ventaController extends Controller
 {
     public function index(Request $request){
-        //if(!$request->ajax()) return redirect('/');
+        if(!$request->ajax()) return redirect('/');
 
         $buscar = $request->buscar;
         $criterio = $request->criterio;
@@ -49,29 +49,29 @@ class ventaController extends Controller
     public function obtenerCabecera(Request $request){
         if(!$request->ajax()) return redirect('/');
 
-        $id = $request->id;
+        $id =$request->id;
 
-        $ingreso = Ingreso::join('personas','ingresos.idproveedor','=','personas.id')
-        ->join('users','ingresos.idusuario','=','users.id')  
-        ->select('ingresos.id','ingresos.tipo_comprobante','ingresos.serie_comprobante',
-        'ingresos.num_comprobante','ingresos.fecha_hora','ingresos.impuesto', 'ingresos.total',
-        'ingresos.estado','personas.nombre as proveedor','users.usuario')
-        ->where('ingresos.id','=',$id)
-        ->orderBy('ingresos.id', 'desc')->take(1)->get();
+        $venta = Venta::join('users','ventas.idusuario','=','users.id')
+        ->join('personas','personas.id','=','ventas.idcliente')  
+        ->select('ventas.id','ventas.tipo_comprobante','ventas.serie_comprobante',
+        'ventas.num_comprobante','ventas.fecha_hora','ventas.impuesto', 'ventas.total',
+        'ventas.estado','personas.nombre as cliente','users.usuario')
+        ->where('ventas.id','=',$id)
+        ->orderBy('ventas.id', 'desc')->take(1)->get();
         
 
-        return ['ingreso' => $ingreso];
+        return ['venta' => $venta];
     }
     
     public function obtenerDetalles(Request $request){
+        if(!$request->ajax()) return redirect('/');
         
-
         $id = $request->id;
 
-        $detalles = DetalleIngreso::join('articulos','detalle_ingresos.idarticulo','=','articulos.id')
-        ->select('detalle_ingresos.cantidad','detalle_ingresos.precio','articulos.nombre as articulo')
-        ->where('detalle_ingresos.idingreso','=',$id)
-        ->orderBy('detalle_ingresos.id', 'desc')->get();
+        $detalles = DetalleVenta::join('articulos','detalle_ventas.idarticulo','=','articulos.id')
+        ->select('detalle_ventas.cantidad','detalle_ventas.precio','articulos.nombre as articulo')
+        ->where('detalle_ventas.idventa','=',$id)
+        ->orderBy('detalle_ventas.id', 'desc')->get();
         
         return ['detalles' => $detalles];
     }
@@ -106,7 +106,7 @@ class ventaController extends Controller
                 $detalle->idarticulo = $det['idarticulo'];
                 $detalle->cantidad = $det['cantidad'];
                 $detalle->precio = $det['precio'];
-                $detalle->descuento = $det['descuento'];
+                $detalle->descuento = 0.10;
                 $detalle->save();
             }
             
@@ -120,9 +120,9 @@ class ventaController extends Controller
 
     public function desactivar(Request $request){
         if(!$request->ajax()) return redirect('/');
-        $ingreso = Venta::findOrFail($request->id);
-        $ingreso->estado = 'Anulado';
-        $ingreso->save(); 
+        $venta = Venta::findOrFail($request->id);
+        $venta->estado = 'Anulado';
+        $venta->save(); 
     }
 
 }

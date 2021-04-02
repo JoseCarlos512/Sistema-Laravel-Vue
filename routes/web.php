@@ -68,6 +68,10 @@ Route::group(['middleware' => ['auth']], function(){
 
         //rutas Ventas
         Route::get('/venta', 'VentaController@index');
+        Route::post('/venta/registrar', 'VentaController@store');
+        Route::put('/venta/desactivar', 'VentaController@desactivar');
+        Route::get('/venta/obtenerCabecera', 'VentaController@obtenerCabecera');
+        Route::get('/venta/obtenerDetalles', 'VentaController@obtenerDetalles');
 
     });
 
@@ -80,6 +84,10 @@ Route::group(['middleware' => ['auth']], function(){
 
         //rutas Ventas
         Route::get('/venta', 'VentaController@index');
+        Route::post('/venta/registrar', 'VentaController@store');
+        Route::put('/venta/desactivar', 'VentaController@desactivar');
+        Route::get('/venta/obtenerCabecera', 'VentaController@obtenerCabecera');
+        Route::get('/venta/obtenerDetalles', 'VentaController@obtenerDetalles');
 
         //rutas categoria
         Route::get('/categoria', 'CategoriaController@index');

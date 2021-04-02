@@ -35,7 +35,7 @@
                                     <tr>
                                         <th>Opciones</th>
                                         <th>Usuario</th>
-                                        <th>Proveedor</th>
+                                        <th>Cliente</th>
                                         <th>Tipo Comprobante</th>
                                         <th>Serie Comprobante</th>
                                         <th>Numero Comprobante</th>
@@ -48,11 +48,11 @@
                                 <tbody>
                                     <tr v-for="venta in arrayVenta" :key="venta.id">
                                         <td>
-                                            <button type="button" @click="verIngreso(ingreso.id)" class="btn btn-success btn-sm">
+                                            <button type="button" @click="verVenta(venta.id)" class="btn btn-success btn-sm">
                                                 <i class="icon-eye"></i>
                                             </button>
                                             <template v-if="venta.estado == 'Registrado'">
-                                                <button type="button" class="btn btn-danger btn-sm" @click="desactivarIngreso(venta.id)">
+                                                <button type="button" class="btn btn-danger btn-sm" @click="desactivarVenta(venta.id)">
                                                     <i class="icon-trash"></i>
                                                 </button>
                                             </template>
@@ -235,8 +235,8 @@
                         <div class="form-group row border">
                             <div class="col-md-9">
                                 <div class="form-group">
-                                    <label>Proveedor</label>
-                                    <p v-text="proveedor"></p>
+                                    <label>Cliente</label>
+                                    <p v-text="cliente"></p>
                                 </div>
                             </div>
                             <div class="col-md-3">
@@ -484,7 +484,6 @@ import vSelect from 'vue-select';
                 var url = '/venta?page=' + page +'&buscar=' + buscar + '&criterio=' + criterio;
                 axios.get(url)
                 .then(function (response) {
-                    console.log(response);
                     // handle success
                     var respuesta = response.data;
                     me.arrayVenta = respuesta.ventas.data;
@@ -563,17 +562,17 @@ import vSelect from 'vue-select';
             },
             agregarDetalle(){
                 let me = this;
+                ////////////////////Sweet Alert instanciar sal////////////////////////////
+                const swalWithBootstrapButtons = Swal.mixin({
+                    customClass: {
+                        confirmButton: 'btn btn-success',
+                        cancelButton: 'btn btn-danger'
+                    },
+                    buttonsStyling: false
+                })
+
                 if (!(me.idarticulo == 0 || me.cantidad == 0 || me.precio == 0)) {
                     if (me.encuentra(me.idarticulo)) {
-                       ////////////////////Sweet Alert instanciar sal////////////////////////////
-                       const swalWithBootstrapButtons = Swal.mixin({
-                            customClass: {
-                                confirmButton: 'btn btn-success',
-                                cancelButton: 'btn btn-danger'
-                            },
-                            buttonsStyling: false
-                        })
-
                         swalWithBootstrapButtons.fire(
                             'Error!',
                             'El articulo ya se encuentra agregado!',
@@ -587,13 +586,21 @@ import vSelect from 'vue-select';
                             cantidad: me.cantidad,
                             precio: me.precio
                         });
+
+                        me.codigo = "";
+                        me.idarticulo = 0;
+                        me.articulo = "";
+                        me.cantidad = 0;
+                        me.precio = 0;
+                        
                     }  
+                } else {
+                    swalWithBootstrapButtons.fire(
+                            'Error!',
+                            'Falta agregar un articulo, precio o cantidad',
+                            'error'
+                        )
                 }
-                me.codigo = "";
-                me.idarticulo = 0;
-                me.articulo = "";
-                me.cantidad = 0;
-                me.precio = 0;
             },
             agregarDetalleModal(data = []){
                 var me = this;
@@ -640,15 +647,15 @@ import vSelect from 'vue-select';
                     // always executed
                 });
             },
-            registrarIngreso(){
-                if(this.validarIngreso()){
+            registrarVenta(){
+                if(this.validarVenta()){
                     return;
                 }
 
                 let me = this;
-                axios.post('/ingreso/registrar', 
+                axios.post('/venta/registrar', 
                 {
-                    'idproveedor': this.idproveedor,
+                    'idcliente': this.idcliente,
                     'tipo_comprobante': this.tipo_comprobante,
                     'serie_comprobante': this.serie_comprobante,
                     'num_comprobante': this.num_comprobante,
@@ -656,6 +663,7 @@ import vSelect from 'vue-select';
                     'total': this.total,
                     'data': this.arrayDetalle
                 }).then(function (response) {
+
                     /* Instanciar swal alert para usar mensajes llamativos */
                     const swalWithBootstrapButtons = Swal.mixin({
                         customClass: {
@@ -673,8 +681,8 @@ import vSelect from 'vue-select';
                     /* *********************************************** */
                     
                     me.listado = 1;
-                    me.listarIngreso(1, '', 'num_comprobante');
-                    me.idproveedor = '';
+                    me.listarVenta(1, '', 'num_comprobante');
+                    me.idcliente = '';
                     me.tipo_comprobante = 'BOLETA';
                     me.serie_comprobante = '';
                     me.num_comprobante = '';
@@ -696,23 +704,23 @@ import vSelect from 'vue-select';
                     // always executed
                 });
             },
-            validarIngreso(){
-                this.errorIngreso = 0;
-                this.errorMostrarMsjIngreso = [];
+            validarVenta(){
+                this.errorVenta = 0;
+                this.errorMostrarMsjVenta = [];
 
-                (!this.idproveedor)?this.errorMostrarMsjIngreso.push("(*) Registre un proveedor."):"";
-                ((!this.tipo_comprobante)||(this.tipo_comprobante == "0"))?this.errorMostrarMsjIngreso.push("(*) Registre el tipo de comprobante."):"";
-                (!this.serie_comprobante)?this.errorMostrarMsjIngreso.push("(*) Registre serie de comprobante."):"";
-                (!this.num_comprobante)?this.errorMostrarMsjIngreso.push("(*) Registre numero de comprobante."):"";
-                (this.arrayDetalle.length<=0)?this.errorMostrarMsjIngreso.push("(*) No hay detalle, ingrese articulos."):"";
+                (!this.idcliente)?this.errorMostrarMsjVenta.push("(*) Registre un cliente."):"";
+                ((!this.tipo_comprobante)||(this.tipo_comprobante == "0"))?this.errorMostrarMsjVenta.push("(*) Registre el tipo de comprobante."):"";
+                (!this.serie_comprobante)?this.errorMostrarMsjVenta.push("(*) Registre serie de comprobante."):"";
+                (!this.num_comprobante)?this.errorMostrarMsjVenta.push("(*) Registre numero de comprobante."):"";
+                (this.arrayDetalle.length<=0)?this.errorMostrarMsjVenta.push("(*) No hay detalle, ingrese articulos."):"";
 
 
                 //Array vacion es diferente de null por consiguiente se ejecutara, pero si pones length no
-                if(this.errorMostrarMsjIngreso.length) this.errorIngreso = 1;
+                if(this.errorMostrarMsjVenta.length) this.errorVenta = 1;
 
-                return this.errorIngreso;
+                return this.errorVenta;
             },
-            desactivarIngreso(id){
+            desactivarVenta(id){
                 const swalWithBootstrapButtons = Swal.mixin({
                     customClass: {
                         confirmButton: 'btn btn-success',
@@ -732,14 +740,14 @@ import vSelect from 'vue-select';
                 if (result.isConfirmed) {
                     //Inicio desactivar
                     let me = this;
-                    axios.put('/ingreso/desactivar', {'id': id})
+                    axios.put('/venta/desactivar', {'id': id})
                          .then(function (response) {
                             swalWithBootstrapButtons.fire(
                                 'Desactivado!',
-                                'El ingreso ha sido anulado con exito.',
+                                'La venta ha sido anulado con exito.',
                                 'success'
                             )
-                            me.listarIngreso(1, '', 'num_comprobante');
+                            me.listarVenta(1, '', 'num_comprobante');
                         })
                     .catch(function (error) {
                         // handle error
@@ -760,23 +768,23 @@ import vSelect from 'vue-select';
                 this.modal = 0;
                 this.tituloModal = '';
             },
-            verIngreso(id){
+            verVenta(id){
                 var me = this;
                 me.listado = 2;
                 
                 //Obtener los datos del ingreso
-                var arrayIngresoTemporal = [];
-                axios.get('/ingreso/obtenerCabecera?id='+ id).then(function (response) {
-                    
+                var arrayVentaTemporal = [];
+                axios.get('/venta/obtenerCabecera?id='+ id).then(function (response) {
+                    console.log(response);
                     var respuesta = response.data;
-                    arrayIngresoTemporal = respuesta.ingreso;   
+                    arrayVentaTemporal = respuesta.venta;   
                     
-                    me.proveedor = arrayIngresoTemporal[0]['proveedor'];
-                    me.tipo_comprobante = arrayIngresoTemporal[0]['tipo_comprobante'];
-                    me.serie_comprobante = arrayIngresoTemporal[0]['serie_comprobante'];
-                    me.num_comprobante = arrayIngresoTemporal[0]['num_comprobante'];
-                    me.impuesto = arrayIngresoTemporal[0]['impuesto'];
-                    me.total = arrayIngresoTemporal[0]['total'];
+                    me.cliente = arrayVentaTemporal[0]['cliente'];
+                    me.tipo_comprobante = arrayVentaTemporal[0]['tipo_comprobante'];
+                    me.serie_comprobante = arrayVentaTemporal[0]['serie_comprobante'];
+                    me.num_comprobante = arrayVentaTemporal[0]['num_comprobante'];
+                    me.impuesto = arrayVentaTemporal[0]['impuesto'];
+                    me.total = arrayVentaTemporal[0]['total'];
                 })
                 .catch(function (error) {
                     // handle error
@@ -784,8 +792,7 @@ import vSelect from 'vue-select';
                 });
 
                 //Obtener los datos de los detalles
-                axios.get('/ingreso/obtenerDetalles?id=' + id).then(function (response) {
-                    console.log(response);
+                axios.get('/venta/obtenerDetalles?id=' + id).then(function (response) {
                     var respuesta = response.data;
                     me.arrayDetalle = respuesta.detalles;
                 })
@@ -800,7 +807,23 @@ import vSelect from 'vue-select';
                 this.modal = 1;
             },
             mostrarDetalle(){
+                var me = this;
+
                 this.listado = 0;
+                me.listarVenta(1, '', 'num_comprobante');
+                me.idcliente = '';
+                me.tipo_comprobante = 'BOLETA';
+                me.serie_comprobante = '';
+                me.num_comprobante = '';
+                me.impuesto = 0.18;
+                me.total = 0.0;
+                me.idarticulo = 0;
+                me.articulo = '';
+                me.cantidad = '';
+                me.precio = 0;
+                me.arrayDetalle = [];
+                me.arrayProveedor = [];
+                me.arrayArticulo = [];
             },
             cerrarDetalle(){
                 this.listado = 1;
