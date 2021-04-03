@@ -44,6 +44,7 @@ Route::group(['middleware' => ['auth']], function(){
         Route::put('/articulo/desactivar', 'ArticuloController@desactivar');
         Route::get('/articulo/buscarArticulo', 'ArticuloController@buscarArticulo');
         Route::get('/articulo/listarArticulo', 'ArticuloController@listarArticulo');
+        Route::get('/articulo/listarPDF', 'ArticuloController@listarPDF');
 
         //rutas Proveedor
         Route::get('/proveedor', 'ProveedorController@index');
@@ -72,6 +73,7 @@ Route::group(['middleware' => ['auth']], function(){
         Route::put('/venta/desactivar', 'VentaController@desactivar');
         Route::get('/venta/obtenerCabecera', 'VentaController@obtenerCabecera');
         Route::get('/venta/obtenerDetalles', 'VentaController@obtenerDetalles');
+        Route::get('/venta/pdf/{id}', 'VentaController@pdf');
 
     });
 
@@ -88,6 +90,7 @@ Route::group(['middleware' => ['auth']], function(){
         Route::put('/venta/desactivar', 'VentaController@desactivar');
         Route::get('/venta/obtenerCabecera', 'VentaController@obtenerCabecera');
         Route::get('/venta/obtenerDetalles', 'VentaController@obtenerDetalles');
+        Route::get('/venta/pdf/{id}', 'VentaController@pdf');
 
         //rutas categoria
         Route::get('/categoria', 'CategoriaController@index');
@@ -105,6 +108,7 @@ Route::group(['middleware' => ['auth']], function(){
         Route::put('/articulo/desactivar', 'ArticuloController@desactivar'); 
         Route::get('/articulo/buscarArticulo', 'ArticuloController@buscarArticulo');
         Route::get('/articulo/listarArticulo', 'ArticuloController@listarArticulo');
+        Route::get('/articulo/listarPDF', 'ArticuloController@listarPDF');
 
         //rutas Proveedor
         Route::get('/proveedor', 'ProveedorController@index');

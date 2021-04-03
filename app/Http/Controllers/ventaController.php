@@ -8,7 +8,7 @@ use Carbon\Carbon;
 use App\Venta;
 use App\DetalleVenta;
 
-class ventaController extends Controller
+class VentaController extends Controller
 {
     public function index(Request $request){
         if(!$request->ajax()) return redirect('/');
@@ -22,7 +22,7 @@ class ventaController extends Controller
             ->select('ventas.id','ventas.tipo_comprobante','ventas.serie_comprobante',
             'ventas.num_comprobante','ventas.fecha_hora','ventas.impuesto', 'ventas.total',
             'ventas.estado','personas.nombre','users.usuario')
-            ->orderBy('ventas.id', 'desc')->paginate(3);
+            ->orderBy('ventas.id', 'desc')->paginate(9);
         }else{
             $ventas = Venta::join('personas','ventas.idcliente','=','personas.id')
             ->join('users','ventas.idusuario','=','users.id')  
@@ -30,7 +30,7 @@ class ventaController extends Controller
             'ventas.num_comprobante','ventas.fecha_hora','ventas.impuesto', 'ventas.total',
             'ventas.estado','personas.nombre','users.usuario')
             ->where('ventas.'.$criterio, 'like', '%'. $buscar . '%')
-            ->orderBy('ventas.id', 'desc')->paginate(3);
+            ->orderBy('ventas.id', 'desc')->paginate(9);
         }
 
         return [
@@ -65,7 +65,7 @@ class ventaController extends Controller
     
     public function obtenerDetalles(Request $request){
         if(!$request->ajax()) return redirect('/');
-        
+
         $id = $request->id;
 
         $detalles = DetalleVenta::join('articulos','detalle_ventas.idarticulo','=','articulos.id')
@@ -74,6 +74,28 @@ class ventaController extends Controller
         ->orderBy('detalle_ventas.id', 'desc')->get();
         
         return ['detalles' => $detalles];
+    }
+
+    public function pdf(Request $request, $id){
+        $venta = Venta::join('users','ventas.idusuario','=','users.id')
+        ->join('personas','personas.id','=','ventas.idcliente')  
+        ->select('ventas.id','ventas.tipo_comprobante','ventas.serie_comprobante',
+        'ventas.num_comprobante','ventas.created_at', 
+        'ventas.fecha_hora','ventas.impuesto', 'ventas.total',
+        'ventas.estado','personas.nombre', 'personas.tipo_documento', 'personas.num_documento',
+        'personas.direccion', 'personas.email', 'personas.telefono', 'users.usuario')
+        ->where('ventas.id','=',$id)
+        ->orderBy('ventas.id', 'desc')->take(1)->get();
+
+        $detalles = DetalleVenta::join('articulos','detalle_ventas.idarticulo','=','articulos.id')
+        ->select('detalle_ventas.cantidad','detalle_ventas.precio', 'detalle_ventas.descuento', 'articulos.nombre as articulo')
+        ->where('detalle_ventas.idventa','=',$id)
+        ->orderBy('detalle_ventas.id', 'desc')->get();
+
+        $numventa = Venta::select('num_comprobante')->where('id', '=', $id)->get();
+
+        $pdf = \PDF::loadView('pdf.venta',['venta' => $venta, 'detalles'=> $detalles]);
+        return $pdf->download('venta-'.$numventa[0]->num_comprobante.'.pdf');
     }
 
     public function store(Request $request){
@@ -109,13 +131,12 @@ class ventaController extends Controller
                 $detalle->descuento = 0.10;
                 $detalle->save();
             }
-            
             DB::commit();
+            return $venta->id;
              
         } catch (Exception $e) {
             DB::rollBack();
         } 
-        
     }
 
     public function desactivar(Request $request){

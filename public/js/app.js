@@ -35188,6 +35188,9 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
 
 
 
@@ -35273,6 +35276,9 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             }).then(function () {
                 // always executed
             });
+        },
+        cargarPDF: function cargarPDF() {
+            window.open("http://127.0.0.1:8000/articulo/listarPDF", '_blank');
         },
         selectCategoria: function selectCategoria() {
             var me = this;
@@ -38394,6 +38400,23 @@ var render = function() {
             [
               _c("i", { staticClass: "icon-plus" }),
               _vm._v(" Nuevo\n                 ")
+            ]
+          ),
+          _vm._v(" "),
+          _c(
+            "button",
+            {
+              staticClass: "btn btn-info",
+              attrs: { type: "button" },
+              on: {
+                click: function($event) {
+                  _vm.cargarPDF()
+                }
+              }
+            },
+            [
+              _c("i", { staticClass: "icon-doc" }),
+              _vm._v(" Reporte\n                 ")
             ]
           )
         ]),
@@ -46678,6 +46701,12 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
+//
+//
+//
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
@@ -46780,6 +46809,9 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
                 console.log(error);
             });
         },
+        imprimirDocumento: function imprimirDocumento(id) {
+            window.open("http://127.0.0.1:8000/venta/pdf/" + id, '_blank');
+        },
         selectCliente: function selectCliente(search, loading) {
             var me = this;
             loading(true); //Sin declarar asigno true a loading
@@ -46825,7 +46857,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             //Actualiza la pagina actual
             me.pagination.current_page = page;
             //Enviar la peticion para visualizar la data de esa pagina
-            me.listarIngreso(page, buscar, criterio);
+            me.listarVenta(page, buscar, criterio);
         },
         encuentra: function encuentra(id) {
             var sw = 0;
@@ -46928,7 +46960,6 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
                 'total': this.total,
                 'data': this.arrayDetalle
             }).then(function (response) {
-
                 /* Instanciar swal alert para usar mensajes llamativos */
                 var swalWithBootstrapButtons = Swal.mixin({
                     customClass: {
@@ -46938,24 +46969,30 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
                     buttonsStyling: false
                 });
 
-                swalWithBootstrapButtons.fire('Registrado!', me.tipo_comprobante + ': se registro correctamente', 'success');
-                /* *********************************************** */
+                swalWithBootstrapButtons.fire('Registrado!', me.tipo_comprobante + ': se registro correctamente', 'success').then(function (result) {
+                    if (result.isConfirmed) {
+                        me.listado = 1;
+                        me.listarVenta(1, '', 'num_comprobante');
+                        me.idcliente = '';
+                        me.tipo_comprobante = 'BOLETA';
+                        me.serie_comprobante = '';
+                        me.num_comprobante = '';
+                        me.impuesto = 0.18;
+                        me.total = 0.0;
+                        me.idarticulo = 0;
+                        me.articulo = '';
+                        me.cantidad = '';
+                        me.precio = 0;
+                        me.arrayDetalle = [];
+                        me.arrayProveedor = [];
+                        me.arrayArticulo = [];
+                        me.imprimirDocumento(response.data);
 
-                me.listado = 1;
-                me.listarVenta(1, '', 'num_comprobante');
-                me.idcliente = '';
-                me.tipo_comprobante = 'BOLETA';
-                me.serie_comprobante = '';
-                me.num_comprobante = '';
-                me.impuesto = 0.18;
-                me.total = 0.0;
-                me.idarticulo = 0;
-                me.articulo = '';
-                me.cantidad = '';
-                me.precio = 0;
-                me.arrayDetalle = [];
-                me.arrayProveedor = [];
-                me.arrayArticulo = [];
+                        /* Read more about handling dismissals below */
+                    } else {
+                        swalWithBootstrapButtons.fire('Error', 'Ocurrio algun error!', 'error');
+                    }
+                });
             }).catch(function (error) {
                 // handle error
                 console.log(error);
@@ -47023,6 +47060,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             me.listado = 2;
 
             //Obtener los datos del ingreso
+            me.venta_id = id;
             var arrayVentaTemporal = [];
             axios.get('/venta/obtenerCabecera?id=' + id).then(function (response) {
                 console.log(response);
@@ -47278,7 +47316,26 @@ var render = function() {
                                           ]
                                         )
                                       ]
-                                    : _vm._e()
+                                    : _vm._e(),
+                                  _vm._v(" "),
+                                  _c(
+                                    "button",
+                                    {
+                                      staticClass: "btn btn-info btn-sm",
+                                      attrs: { type: "button" },
+                                      on: {
+                                        click: function($event) {
+                                          _vm.imprimirDocumento(venta.id)
+                                        }
+                                      }
+                                    },
+                                    [
+                                      _c("i", { staticClass: "icon-doc" }),
+                                      _vm._v(
+                                        " \n                                         "
+                                      )
+                                    ]
+                                  )
                                 ],
                                 2
                               ),
@@ -48142,8 +48199,7 @@ var render = function() {
                                       "tbody",
                                       [
                                         _vm._l(_vm.arrayDetalle, function(
-                                          detalle,
-                                          index
+                                          detalle
                                         ) {
                                           return _c("tr", { key: detalle.id }, [
                                             _c("td", {
@@ -48269,6 +48325,23 @@ var render = function() {
                               }
                             },
                             [_vm._v("Cerrar")]
+                          ),
+                          _vm._v(" "),
+                          _c(
+                            "button",
+                            {
+                              staticClass: "btn btn-info",
+                              attrs: { type: "button" },
+                              on: {
+                                click: function($event) {
+                                  _vm.imprimirDocumento(_vm.venta_id)
+                                }
+                              }
+                            },
+                            [
+                              _c("i", { staticClass: "icon-doc" }),
+                              _vm._v(" Imprimir\n                             ")
+                            ]
                           )
                         ])
                       ])

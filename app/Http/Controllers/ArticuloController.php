@@ -13,8 +13,7 @@ class ArticuloController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
-    {
+    public function index(Request $request){
         if(!$request->ajax()) return redirect('/');
 
         $buscar = $request->buscar;
@@ -49,8 +48,7 @@ class ArticuloController extends Controller
         ];
     }
 
-    public function listarArticulo(Request $request)
-    {
+    public function listarArticulo(Request $request){
         if(!$request->ajax()) return redirect('/');
 
         $buscar = $request->buscar;
@@ -74,6 +72,17 @@ class ArticuloController extends Controller
         return [ 'articulos' => $articulos ];
     }
     
+    public function listarPDF() {
+        $articulos = Articulo::join('categorias','articulos.id_categoria','=','categorias.id')
+        ->select('articulos.id','articulos.id_categoria','articulos.codigo','articulos.nombre','categorias.nombre as nombre_categoria',
+                    'articulos.precio_venta','articulos.stock','articulos.descripcion','articulos.condicion')
+        ->orderBy('articulos.nombre','desc')->get();
+
+        $count = Articulo::count();
+
+        $pdf = \PDF::loadView('pdf.articulospdf',['articulos'=>$articulos, 'count'=>$count]);
+        return $pdf->download('articulos.pdf');
+    }
 
     public function buscarArticulo(Request $request) {
         if(!$request->ajax()) return redirect('/');
@@ -92,8 +101,7 @@ class ArticuloController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
-    {
+    public function store(Request $request){
         if(!$request->ajax()) return redirect('/');
         $articulo = new Articulo();
         $articulo->id_categoria = $request->id_categoria;
@@ -113,8 +121,7 @@ class ArticuloController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request)
-    {
+    public function update(Request $request){
         if(!$request->ajax()) return redirect('/');
         $articulo = Articulo::findOrFail($request->id);
         $articulo->id_categoria = $request->id_categoria;
@@ -128,16 +135,14 @@ class ArticuloController extends Controller
         
     }
 
-    public function desactivar(Request $request)
-    {
+    public function desactivar(Request $request){
         if(!$request->ajax()) return redirect('/');
         $articulo = Articulo::findOrFail($request->id);
         $articulo->condicion = '0';
         $articulo->save(); 
     }
 
-    public function activar(Request $request)
-    {
+    public function activar(Request $request){
         if(!$request->ajax()) return redirect('/');
         $articulo = Articulo::findOrFail($request->id);
         $articulo->condicion = '1';

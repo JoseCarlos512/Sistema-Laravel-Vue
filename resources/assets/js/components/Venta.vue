@@ -56,6 +56,9 @@
                                                     <i class="icon-trash"></i>
                                                 </button>
                                             </template>
+                                            <button type="button" @click="imprimirDocumento(venta.id)" class="btn btn-info btn-sm">
+                                                <i class="icon-doc"></i>&nbsp;
+                                            </button>
                                         </td>
                                         <td v-text="venta.usuario"></td>
                                         <td v-text="venta.nombre"></td>
@@ -273,7 +276,7 @@
                                         <th>Subtotal</th>
                                     </thead>
                                     <tbody v-if="arrayDetalle.length">
-                                        <tr v-for="(detalle, index) in arrayDetalle" :key="detalle.id">
+                                        <tr v-for="(detalle) in arrayDetalle" :key="detalle.id">
                                             <td v-text="detalle.articulo"></td>
                                             <td v-text="detalle.precio"></td>
                                             <td v-text="detalle.cantidad"></td>
@@ -305,6 +308,9 @@
                         <div class="form-group">
                             <div class="col-md-12">
                                 <button type="button" class="btn btn-secondary" @click="cerrarDetalle()">Cerrar</button>
+                                <button type="button" @click="imprimirDocumento(venta_id)" class="btn btn-info">
+                                    <i class="icon-doc"></i>&nbsp;Imprimir
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -497,6 +503,9 @@ import vSelect from 'vue-select';
                     console.log(error);
                 });
             },
+            imprimirDocumento(id){
+                window.open("http://127.0.0.1:8000/venta/pdf/" + id ,'_blank');
+            },
             selectCliente(search,loading){
                 let me = this;
                 loading(true); //Sin declarar asigno true a loading
@@ -545,7 +554,7 @@ import vSelect from 'vue-select';
                 //Actualiza la pagina actual
                 me.pagination.current_page = page;
                 //Enviar la peticion para visualizar la data de esa pagina
-                me.listarIngreso(page, buscar, criterio);
+                me.listarVenta(page, buscar, criterio);
             },
             encuentra(id){
                 var sw = 0;
@@ -663,7 +672,6 @@ import vSelect from 'vue-select';
                     'total': this.total,
                     'data': this.arrayDetalle
                 }).then(function (response) {
-
                     /* Instanciar swal alert para usar mensajes llamativos */
                     const swalWithBootstrapButtons = Swal.mixin({
                         customClass: {
@@ -677,24 +685,35 @@ import vSelect from 'vue-select';
                         'Registrado!',
                         me.tipo_comprobante + ': se registro correctamente',
                         'success'
-                    )
-                    /* *********************************************** */
-                    
-                    me.listado = 1;
-                    me.listarVenta(1, '', 'num_comprobante');
-                    me.idcliente = '';
-                    me.tipo_comprobante = 'BOLETA';
-                    me.serie_comprobante = '';
-                    me.num_comprobante = '';
-                    me.impuesto = 0.18;
-                    me.total = 0.0;
-                    me.idarticulo = 0;
-                    me.articulo = '';
-                    me.cantidad = '';
-                    me.precio = 0;
-                    me.arrayDetalle = [];
-                    me.arrayProveedor = [];
-                    me.arrayArticulo = [];
+                        
+                    ).then((result) => {
+                        if (result.isConfirmed) {
+                            me.listado = 1;
+                            me.listarVenta(1, '', 'num_comprobante');
+                            me.idcliente = '';
+                            me.tipo_comprobante = 'BOLETA';
+                            me.serie_comprobante = '';
+                            me.num_comprobante = '';
+                            me.impuesto = 0.18;
+                            me.total = 0.0;
+                            me.idarticulo = 0;
+                            me.articulo = '';
+                            me.cantidad = '';
+                            me.precio = 0;
+                            me.arrayDetalle = [];
+                            me.arrayProveedor = [];
+                            me.arrayArticulo = [];
+                            me.imprimirDocumento(response.data);
+
+                        /* Read more about handling dismissals below */
+                        } else {
+                            swalWithBootstrapButtons.fire(
+                            'Error',
+                            'Ocurrio algun error!',
+                            'error'
+                            )
+                        }
+                    })
                 })
                 .catch(function (error) {
                     // handle error
@@ -773,6 +792,7 @@ import vSelect from 'vue-select';
                 me.listado = 2;
                 
                 //Obtener los datos del ingreso
+                me.venta_id = id;
                 var arrayVentaTemporal = [];
                 axios.get('/venta/obtenerCabecera?id='+ id).then(function (response) {
                     console.log(response);
