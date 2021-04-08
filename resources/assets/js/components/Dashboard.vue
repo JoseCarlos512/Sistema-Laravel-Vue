@@ -54,11 +54,11 @@
     export default {
         data (){
             return {
-                varIngreso:null,
-                charIngreso:null,
-                ingresos:[],
-                varTotalIngreso:[],
-                varMesIngreso:[], 
+                varIngreso:null,  // Ubicacion donde se posara el grafico
+                charIngreso:null, // Variable donde se guardara el grafico
+                ingresos:[],      //  Lista de datos de ingresos 
+                varTotalIngreso:[], // Guarda solo totales 
+                varMesIngreso:[],   // Guarda solo meses
                 
                 varVenta:null,
                 charVenta:null,
