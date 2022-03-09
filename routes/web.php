@@ -136,6 +136,5 @@ Route::group(['middleware' => ['auth']], function(){
     });
 });
 
-
 //Rutas login
 //Route::get('/home', 'HomeController@index')->name('home');

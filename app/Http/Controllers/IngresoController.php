@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Ingreso;
 use App\DetalleIngreso;
+use App\User;
+use App\Notifications\NotifyAdmin;
 
 class IngresoController extends Controller
 {
@@ -111,6 +113,7 @@ class IngresoController extends Controller
                 $detalle->save();
             }
             
+           
             DB::commit();
              
         } catch (Exception $e) {
