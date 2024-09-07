@@ -1,22 +1,26 @@
+# Usa una imagen base con PHP 7.1.3
 FROM php:7.1.3-apache
 
-# Instala extensiones necesarias
-RUN docker-php-ext-install mysqli pdo pdo_mysql
+# Instala las dependencias necesarias
+RUN apt-get update && apt-get install -y libpng-dev libjpeg-dev libfreetype6-dev libzip-dev libicu-dev libxml2-dev
+RUN docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/
+RUN docker-php-ext-install gd zip intl xml
 
-# Copiar el contenido de tu proyecto al contenedor
-COPY . /var/www/html/
-
-# Configurar permisos
-RUN chown -R www-data:www-data /var/www/html
-
-# Instalar Composer
+# Instala Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Instalar dependencias de Composer
-RUN composer install --ignore-platform-reqs
+# Copia el código fuente al contenedor
+COPY . /var/www/html
 
-# Instalar dependencias de npm
-RUN npm ci
+# Configura permisos
+RUN chown -R www-data:www-data /var/www/html
 
-# Exponer el puerto 80
+# Instala las dependencias de Composer
+RUN composer install --no-dev --optimize-autoloader
+
+# Configura el entorno
+RUN cp .env.example .env
+RUN php artisan key:generate
+
+# Expone el puerto 80
 EXPOSE 80
