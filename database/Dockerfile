@@ -2,7 +2,14 @@
 FROM php:7.1.3-apache
 
 # Instala las dependencias necesarias
-RUN apt-get update && apt-get install -y libpng-dev libjpeg-dev libfreetype6-dev libzip-dev libicu-dev libxml2-dev
+RUN apt-get update && apt-get install -y \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libzip-dev \
+    libicu-dev \
+    libxml2-dev
+
 RUN docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/
 RUN docker-php-ext-install gd zip intl xml
 
@@ -16,7 +23,7 @@ COPY . /var/www/html
 RUN chown -R www-data:www-data /var/www/html
 
 # Instala las dependencias de Composer
-RUN composer install --no-dev --optimize-autoloader
+RUN composer install --optimize-autoloader --no-dev
 
 # Configura el entorno
 RUN cp .env.example .env
